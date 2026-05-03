@@ -1,18 +1,40 @@
-import React, { useState } from 'react';
-import { User, Settings, Heart, History, MapPin, Star, Calendar } from 'lucide-react';
-
-const myTrips = [
-  { id: 101, destination: 'Bali, Indonesia', date: 'March 2024', status: 'Completed', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=300' },
-  { id: 102, destination: 'The Maldives', date: 'May 2024', status: 'Upcoming', img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80&w=300' },
-];
-
-const wishlist = [
-  { id: 1, name: 'Santorini, Greece', price: '$1,500', img: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&q=80&w=300' },
-  { id: 2, name: 'Kyoto, Japan', price: '$1,200', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&q=80&w=300' },
-];
+import { useState, useEffect } from 'react';
+import { Settings, Heart, History, MapPin, Calendar } from 'lucide-react';
+import { api } from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('trips');
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await api.getProfile();
+        setProfile(data);
+      } catch (err) {
+        console.error(err);
+        navigate('/'); // Redirect to login if not authenticated
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [navigate]);
+
+  const handleRemoveWishlist = async (packageId) => {
+    try {
+      const updatedWishlist = await api.toggleWishlist(packageId);
+      setProfile({ ...profile, wishlist: updatedWishlist });
+    } catch (err) {
+      console.error('Failed to update wishlist', err);
+    }
+  };
+
+  if (loading) return <div className="pt-32 px-6 text-center">Loading profile...</div>;
+  if (!profile) return <div className="pt-32 px-6 text-center">Please log in to view profile.</div>;
 
   return (
     <div className="pt-32 px-6 max-w-7xl mx-auto mb-20">
@@ -27,8 +49,8 @@ const Profile = () => {
                 className="w-full h-full object-cover rounded-full border-4 border-background"
               />
             </div>
-            <h2 className="text-xl font-bold outfit">Alex Johnson</h2>
-            <p className="text-sm text-text-muted mb-6">alex.j@example.com</p>
+            <h2 className="text-xl font-bold outfit">{profile.name}</h2>
+            <p className="text-sm text-text-muted mb-6">{profile.email}</p>
             
             <div className="space-y-2">
               <button 
@@ -64,24 +86,25 @@ const Profile = () => {
 
           {activeTab === 'trips' ? (
             <div className="space-y-6">
-              {myTrips.map((trip) => (
-                <div key={trip.id} className="glass-card flex flex-col md:flex-row overflow-hidden">
+              {profile.tripHistory.length === 0 && <p className="text-text-muted">No trips booked yet.</p>}
+              {profile.tripHistory.map((trip) => (
+                <div key={trip._id} className="glass-card flex flex-col md:flex-row overflow-hidden">
                   <div className="md:w-48 h-32 md:h-auto">
-                    <img src={trip.img} alt={trip.destination} className="w-full h-full object-cover" />
+                    <img src={trip.package?.img || ''} alt={trip.package?.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="p-6 flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                      <h3 className="text-xl font-bold mb-1 outfit">{trip.destination}</h3>
+                      <h3 className="text-xl font-bold mb-1 outfit">{trip.package?.title}</h3>
                       <div className="flex items-center gap-4 text-sm text-text-muted">
-                        <span className="flex items-center gap-1"><Calendar size={14} /> {trip.date}</span>
-                        <span className="flex items-center gap-1"><MapPin size={14} /> ID: {trip.id}</span>
+                        <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(trip.date).toLocaleDateString()}</span>
+                        <span className="flex items-center gap-1"><MapPin size={14} /> ID: {trip.bookingId}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${trip.status === 'Upcoming' ? 'bg-primary/20 text-primary' : 'bg-green-400/20 text-green-400'}`}>
                         {trip.status}
                       </span>
-                      <button className="text-sm font-bold hover:text-primary transition-colors">Details</button>
+                      <button onClick={() => navigate(`/package/${trip.package?._id}`)} className="text-sm font-bold hover:text-primary transition-colors">Details</button>
                     </div>
                   </div>
                 </div>
@@ -89,20 +112,27 @@ const Profile = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {wishlist.map((item) => (
-                <div key={item.id} className="glass-card overflow-hidden">
+              {profile.wishlist.length === 0 && <p className="text-text-muted">Wishlist is empty.</p>}
+              {profile.wishlist.map((item) => (
+                <div key={item._id} className="glass-card overflow-hidden">
                   <div className="h-40 overflow-hidden relative">
-                    <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-                    <button className="absolute top-3 right-3 p-2 glass rounded-full text-red-500">
+                    <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => handleRemoveWishlist(item._id)}
+                      className="absolute top-3 right-3 p-2 glass rounded-full text-red-500 hover:bg-red-500/20 transition-all"
+                    >
                       <Heart size={16} fill="currentColor" />
                     </button>
                   </div>
                   <div className="p-4 flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold outfit">{item.name}</h4>
+                      <h4 className="font-bold outfit">{item.title}</h4>
                       <span className="text-sm text-primary font-bold">{item.price}</span>
                     </div>
-                    <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-bold transition-all">
+                    <button 
+                      onClick={() => navigate(`/package/${item._id}`)}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-bold transition-all"
+                    >
                       View Details
                     </button>
                   </div>

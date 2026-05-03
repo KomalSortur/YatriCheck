@@ -1,28 +1,53 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Clock, Users, ShieldCheck, MapPin, CheckCircle2 } from 'lucide-react';
+import { api } from '../utils/api';
 
 const PackageDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Mock data fetching
-  const pkg = {
-    title: 'Luxury Maldives Escape',
-    rating: 4.9,
-    reviews: 124,
-    duration: '7 Days / 6 Nights',
-    groupSize: 'Max 12 people',
-    price: '$1,299',
-    img: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&q=80&w=1200',
-    description: 'Experience the ultimate tropical paradise in the Maldives. This luxury package includes private water villa accommodation, all-inclusive dining, and curated island excursions.',
-    itinerary: [
-      { day: 1, title: 'Arrival & Welcome Dinner' },
-      { day: 2, title: 'Private Island Snorkeling' },
-      { day: 3, title: 'Sunset Cruise & Dolphin Watching' },
-      { day: 4, title: 'Spa & Wellness Retreat' },
-    ]
+  const [pkg, setPkg] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [date, setDate] = useState('');
+  
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const data = await api.getPackageById(id);
+        setPkg(data);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load package details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackage();
+  }, [id]);
+
+  const handleBooking = async () => {
+    if (!date) return alert('Please select a check-in date');
+    setBookingLoading(true);
+    try {
+      await api.createBooking({
+        packageId: id,
+        date,
+        totalPaid: pkg.price
+      });
+      navigate('/booking');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create booking. Please log in first.');
+    } finally {
+      setBookingLoading(false);
+    }
   };
+
+  if (loading) return <div className="pt-32 px-6 text-center">Loading package details...</div>;
+  if (error || !pkg) return <div className="pt-32 px-6 text-center text-red-500">{error || 'Package not found'}</div>;
 
   return (
     <div className="pt-32 px-6 max-w-7xl mx-auto mb-20">
@@ -107,7 +132,12 @@ const PackageDetails = () => {
             <div className="space-y-4 mb-8">
               <div>
                 <label className="text-xs font-bold text-text-muted uppercase mb-2 block">Check-in Date</label>
-                <input type="date" className="w-full bg-white/5 border border-glass-border rounded-xl p-3 focus:outline-none focus:border-primary" />
+                <input 
+                  type="date" 
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full bg-white/5 border border-glass-border rounded-xl p-3 focus:outline-none focus:border-primary" 
+                />
               </div>
               <div>
                 <label className="text-xs font-bold text-text-muted uppercase mb-2 block">Guests</label>
@@ -120,10 +150,11 @@ const PackageDetails = () => {
             </div>
 
             <button
-              onClick={() => navigate('/booking')}
-              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all mb-4"
+              onClick={handleBooking}
+              disabled={bookingLoading}
+              className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all mb-4 disabled:opacity-50"
             >
-              Confirm Booking
+              {bookingLoading ? 'Processing...' : 'Confirm Booking'}
             </button>
             <p className="text-center text-xs text-text-muted">No credit card required right now.</p>
 

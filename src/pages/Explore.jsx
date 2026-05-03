@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Filter, Star, Heart, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Star, Heart, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const destinations = [

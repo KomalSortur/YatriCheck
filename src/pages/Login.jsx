@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Mail, Lock, User, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import loginBg from '../assets/login_bg.png';

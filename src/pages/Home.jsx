@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, MapPin, Calendar, Users, ShieldCheck, CreditCard, Clock, Headset, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,9 +1,31 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, ArrowRight, Download, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../utils/api';
 
 const Booking = () => {
   const navigate = useNavigate();
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLatestBooking = async () => {
+      try {
+        const bookings = await api.getMyBookings();
+        if (bookings.length > 0) {
+          setBooking(bookings[0]); // The most recent one
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLatestBooking();
+  }, []);
+
+  if (loading) return <div className="pt-32 px-6 text-center">Loading confirmation...</div>;
+  if (!booking) return <div className="pt-32 px-6 text-center">No bookings found.</div>;
 
   return (
     <div className="pt-32 px-6 flex items-center justify-center min-h-[80vh]">
@@ -19,25 +41,25 @@ const Booking = () => {
 
         <h1 className="text-4xl font-bold mb-4 outfit">Booking Confirmed!</h1>
         <p className="text-text-muted text-lg mb-8 max-w-md mx-auto">
-          Pack your bags! Your trip to <span className="text-white font-bold">The Maldives</span> has been successfully booked. Check your email for the confirmation details.
+          Pack your bags! Your trip to <span className="text-white font-bold">{booking.package?.title || 'The Maldives'}</span> has been successfully booked. Check your email for the confirmation details.
         </p>
 
         <div className="glass p-6 mb-10 grid grid-cols-2 gap-8 text-left">
           <div>
             <span className="text-xs text-text-muted uppercase font-bold block mb-1">Booking ID</span>
-            <span className="font-mono font-bold">#YTC-782910</span>
+            <span className="font-mono font-bold">{booking.bookingId}</span>
           </div>
           <div>
             <span className="text-xs text-text-muted uppercase font-bold block mb-1">Date</span>
-            <span className="font-bold">May 12, 2024</span>
+            <span className="font-bold">{new Date(booking.date).toLocaleDateString()}</span>
           </div>
           <div>
             <span className="text-xs text-text-muted uppercase font-bold block mb-1">Total Paid</span>
-            <span className="font-bold text-primary">$1,299</span>
+            <span className="font-bold text-primary">{booking.totalPaid}</span>
           </div>
           <div>
             <span className="text-xs text-text-muted uppercase font-bold block mb-1">Payment Status</span>
-            <span className="text-green-400 font-bold">Successful</span>
+            <span className="text-green-400 font-bold">{booking.status}</span>
           </div>
         </div>
 
