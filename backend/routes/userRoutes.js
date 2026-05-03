@@ -1,46 +1,63 @@
 import express from 'express';
 import User from '../models/User.js';
-import { authMiddleware } from '../middleware/auth.js';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-router.get('/profile', authMiddleware, async (req, res) => {
+// POST /api/users/register - Register a new user
+router.post('/register', async (req, res) => {
   try {
-    const user = await User.findById(req.userId)
-      .populate('wishlist')
-      .populate({
-        path: 'tripHistory',
-        populate: { path: 'package' }
-      })
-      .select('-password');
-    res.json(user);
+    const { name, email, password } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({ 
+      name, 
+      email, 
+      password: hashedPassword 
+    });
+    
+    await newUser.save();
+
+    res.status(201).json({ 
+      message: 'User registered successfully', 
+      user: { id: newUser._id, name: newUser.name, email: newUser.email } 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Error registering user', error: error.message });
   }
 });
 
-router.post('/wishlist/:packageId', authMiddleware, async (req, res) => {
+// POST /api/users/login - Login user
+router.post('/login', async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-    const { packageId } = req.params;
-    
-    // Toggle wishlist
-    const index = user.wishlist.indexOf(packageId);
-    if (index === -1) {
-      user.wishlist.push(packageId);
-    } else {
-      user.wishlist.splice(index, 1);
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User does not exist' });
     }
-    
-    await user.save();
-    
-    // Return updated populated wishlist
-    const updatedUser = await User.findById(req.userId).populate('wishlist');
-    res.json(updatedUser.wishlist);
+
+    // Compare passwords using bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    res.json({ 
+      message: 'Login successful', 
+      user: { id: user._id, name: user.name, email: user.email } 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Error during login', error: error.message });
   }
 });
 

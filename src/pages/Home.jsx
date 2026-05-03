@@ -1,17 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Users, ShieldCheck, CreditCard, Clock, Headset, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const destinations = [
-  { id: 1, name: 'Goa', price: '₹12,000', tag: 'Beach Paradise', img: 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?q=80&w=800' },
-  { id: 2, name: 'Manali', price: '₹15,500', tag: 'Snowy Escape', img: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=800' },
-  { id: 3, name: 'Coorg', price: '₹10,200', tag: 'Coffee Highlands', img: 'https://images.unsplash.com/photo-1617469165786-8007eda3caa7?q=80&w=800' },
-  { id: 4, name: 'Kerala', price: '₹18,000', tag: 'Backwater Bliss', img: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=800&q=80' },
-  { id: 5, name: 'Mysore', price: '₹8,500', tag: 'Royal Heritage', img: 'https://trekentrip.com/wp-content/uploads/2025/06/mysuru-palace-1024x640.jpg' },
-  { id: 6, name: 'Maharashtra', price: '₹8,000', tag: 'Ajanta/Ellora caves', img: 'https://thumbs.dreamstime.com/b/kailas-temple-ellora-caves-complex-india-maharashtra-state-82378087.jpg' },
-  { id: 7, name: 'Hampi', price: '₹5,000', tag: 'Hampi ruins', img: 'https://assets-news.housing.com/news/wp-content/uploads/2022/08/31020547/places-to-visit-in-hampi-FEATURE-compressed.jpg' },
-  { id: 8, name: 'Rajasthan', price: '₹15,000', tag: 'Hawa Mahal', img: 'https://wallpapercave.com/wp/wp4555011.jpg' },
-];
+// Static destinations removed. Now fetching from backend.
 
 const packages = [
   { id: 1, type: 'Budget', title: 'Explorer Pass', duration: '2D/3N', price: '₹5,999', badge: 'badge-budget', desc: 'Perfect for solo travelers and students looking for an affordable adventure.' },
@@ -22,14 +13,28 @@ const packages = [
 const categories = [
   { name: 'Adventure', icon: '🧗' },
   { name: 'Beach', icon: '🏖️' },
-  { name: 'Hill stations', icon: '🏔️' },
+  { name: 'Hill Stations', icon: '🏔️' },
   { name: 'Religious', icon: '🛕' },
-  { name: 'City tours', icon: '🌆' },
+  { name: 'City Tours', icon: '🌆' },
 ];
 
 const Home = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState({ from: '', to: '', date: '', travelers: '1' });
+  const [selectedDest, setSelectedDest] = useState(null);
+  const [topTrips, setTopTrips] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/trips/search')
+      .then(res => res.json())
+      .then(data => setTopTrips(data.slice(0, 8)))
+      .catch(console.error);
+  }, []);
+
+  const handleExplore = () => {
+    navigate('/explore', { state: { initialSearch: { ...search, to: selectedDest.destination } } });
+    setSelectedDest(null);
+  };
 
   return (
     <div className="home-page">
@@ -89,7 +94,7 @@ const Home = () => {
               <option value="3">3+ Travelers</option>
             </select>
           </div>
-          <button className="search-btn" onClick={() => navigate('/explore')}>
+          <button className="search-btn" onClick={() => navigate('/explore', { state: { initialSearch: search } })}>
             Explore Trips
           </button>
         </div>
@@ -99,18 +104,87 @@ const Home = () => {
       <section className="home-section">
         <h2 className="section-title">Popular Destinations</h2>
         <div className="dest-grid">
-          {destinations.map((dest) => (
-            <div key={dest.id} className="dest-card" onClick={() => navigate('/explore')}>
-              <img src={dest.img} alt={dest.name} className="dest-img" />
+          {topTrips.map((dest) => (
+            <div key={dest._id} className="dest-card" onClick={() => setSelectedDest(dest)}>
+              <img src={dest.image} alt={dest.destination} className="dest-img" />
               <div className="dest-info">
-                <p className="dest-tag">{dest.tag}</p>
-                <h3 className="dest-name">{dest.name}</h3>
-                <p className="dest-price">Starting {dest.price}</p>
+                <p className="dest-tag">{dest.category}</p>
+                <h3 className="dest-name">{dest.destination}</h3>
               </div>
             </div>
           ))}
         </div>
       </section>
+
+      {/* Quick Search Sidebar */}
+      {selectedDest && (
+        <div className="sidebar-overlay" onClick={() => setSelectedDest(null)}>
+          <div className="quick-search-sidebar glass animate-slide-in" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setSelectedDest(null)}>
+              <X size={20} />
+            </button>
+            <img src={selectedDest.image} alt={selectedDest.destination} className="sidebar-dest-img" />
+            
+            <div className="sidebar-content">
+              <div className="dest-header mb-6">
+                <h2 className="text-3xl font-bold outfit mb-1">{selectedDest.destination}</h2>
+                <p className="text-text-muted text-sm">
+                  {selectedDest.duration || '3D/2N'} • {selectedDest.hotel || '3★ Hotel'} • {selectedDest.transport || 'Bus'} Transport
+                </p>
+              </div>
+
+              <div className="search-refinement-form space-y-6">
+                <div className="input-group-v2">
+                  <label className="text-xs font-bold text-text-muted uppercase mb-2 block">From :</label>
+                  <div className="input-with-icon">
+                    <MapPin size={18} className="text-primary" />
+                    <input 
+                      type="text" 
+                      placeholder="Departure City" 
+                      value={search.from}
+                      onChange={(e) => setSearch({...search, from: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group-v2">
+                  <label className="text-xs font-bold text-text-muted uppercase mb-2 block">Travel Date :</label>
+                  <div className="input-with-icon">
+                    <Calendar size={18} className="text-secondary" />
+                    <input 
+                      type="date" 
+                      value={search.date}
+                      onChange={(e) => setSearch({...search, date: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group-v2">
+                  <label className="text-xs font-bold text-text-muted uppercase mb-2 block">Number of Travellers :</label>
+                  <div className="input-with-icon">
+                    <Users size={18} className="text-accent" />
+                    <select 
+                      value={search.travelers}
+                      onChange={(e) => setSearch({...search, travelers: e.target.value})}
+                    >
+                      <option value="1">1 Person</option>
+                      <option value="2">2 People</option>
+                      <option value="3">3+ People</option>
+                    </select>
+                  </div>
+                </div>
+
+
+
+                <button className="sidebar-explore-btn mt-10" onClick={handleExplore}>
+                  Explore Trips
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Trip Packages */}
       <section className="home-section">
@@ -168,7 +242,12 @@ const Home = () => {
         <h2 className="section-title">Travel Categories</h2>
         <div className="cat-grid">
           {categories.map((cat, idx) => (
-            <div key={idx} className="cat-card">
+            <div 
+              key={idx} 
+              className="cat-card"
+              onClick={() => navigate('/explore', { state: { initialFilters: { category: cat.name } } })}
+              style={{ cursor: 'pointer' }}
+            >
               <span className="cat-icon">{cat.icon}</span>
               <span className="cat-name">{cat.name}</span>
             </div>
@@ -205,5 +284,17 @@ const Home = () => {
     </div>
   );
 };
+
+const X = ({ size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 6 6 18M6 6l12 12" />
+  </svg>
+);
+
+const ChevronRight = ({ size }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+);
 
 export default Home;
