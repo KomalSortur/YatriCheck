@@ -12,6 +12,7 @@ const PackageDetails = () => {
   const [error, setError] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [date, setDate] = useState('');
+  const [guests, setGuests] = useState(1);
   
   useEffect(() => {
     const fetchPackage = async () => {
@@ -43,7 +44,19 @@ const PackageDetails = () => {
       await api.createBooking({
         packageId: id,
         date,
-        totalPaid: pkg.price
+        totalPaid: pkg.price,
+        guests,
+        flightDetails: {
+          airline: 'IndiGo',
+          pnr: 'YTC' + Math.random().toString(36).substring(7).toUpperCase(),
+          departure: '10:30 AM',
+          arrival: '1:45 PM'
+        },
+        hotelDetails: {
+          name: pkg.title + ' Resort & Spa',
+          roomType: 'Ocean View Suite'
+        },
+        paymentMethod: 'Credit Card (Visa)'
       });
       navigate('/booking');
     } catch (err) {
@@ -171,10 +184,15 @@ const PackageDetails = () => {
               </div>
               <div>
                 <label className="text-xs font-bold text-text-muted uppercase mb-2 block">Guests</label>
-                <select className="w-full bg-white/5 border border-glass-border rounded-xl p-3 focus:outline-none focus:border-primary">
-                  <option>1 Adult</option>
-                  <option>2 Adults</option>
-                  <option>Family (2+2)</option>
+                <select 
+                  value={guests}
+                  onChange={(e) => setGuests(parseInt(e.target.value))}
+                  className="w-full bg-white/5 border border-glass-border rounded-xl p-3 focus:outline-none focus:border-primary"
+                >
+                  <option value={1}>1 Adult</option>
+                  <option value={2}>2 Adults</option>
+                  <option value={3}>3 Adults</option>
+                  <option value={4}>4 Adults</option>
                 </select>
               </div>
             </div>
