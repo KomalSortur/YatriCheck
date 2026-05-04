@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, Clock, Users, ShieldCheck, MapPin, CheckCircle2 } from 'lucide-react';
+import { Star, Clock, Users, ShieldCheck, MapPin, CheckCircle2, Utensils, Plane } from 'lucide-react';
 import { api } from '../utils/api';
 
 const PackageDetails = () => {
@@ -18,6 +18,14 @@ const PackageDetails = () => {
       try {
         const data = await api.getPackageById(id);
         setPkg(data);
+        // Log as recently viewed (silently)
+        try {
+          if (api.getAuthToken()) {
+            await api.addRecentlyViewed(id);
+          }
+        } catch (e) {
+          // Ignore if not logged in or error
+        }
       } catch (err) {
         console.error(err);
         setError('Failed to load package details');
@@ -97,6 +105,28 @@ const PackageDetails = () => {
                 <span className="text-xs text-text-muted uppercase font-bold">Status</span>
                 <span className="text-sm font-semibold">Available</span>
               </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="glass p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                  <Utensils className="text-primary w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold outfit">Food & Dining</h3>
+              </div>
+              <p className="text-text-muted text-sm leading-relaxed">{pkg.food || 'Meals details are not specified for this package.'}</p>
+            </div>
+
+            <div className="glass p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                  <Plane className="text-secondary w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold outfit">Travel & Transport</h3>
+              </div>
+              <p className="text-text-muted text-sm leading-relaxed">{pkg.transport || 'Transportation details are not specified for this package.'}</p>
             </div>
           </div>
 

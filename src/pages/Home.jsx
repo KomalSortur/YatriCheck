@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Users, ShieldCheck, CreditCard, Clock, Headset, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,11 +13,7 @@ const destinations = [
   { id: 8, name: 'Rajasthan', price: '₹15,000', tag: 'Hawa Mahal', img: 'https://wallpapercave.com/wp/wp4555011.jpg' },
 ];
 
-const packages = [
-  { id: 1, type: 'Budget', title: 'Explorer Pass', duration: '2D/3N', price: '₹5,999', badge: 'badge-budget', desc: 'Perfect for solo travelers and students looking for an affordable adventure.' },
-  { id: 2, type: 'Standard', title: 'Classic Journey', duration: '3D/4N', price: '₹12,499', badge: 'badge-standard', desc: 'Balanced comfort and experience with verified stays and guided tours.' },
-  { id: 3, type: 'Premium', title: 'Elite Retreat', duration: '4D/5N', price: '₹24,999', badge: 'badge-premium', desc: 'Ultimate luxury with 5-star hotels, private transfers, and curated meals.' },
-];
+import { api } from '../utils/api';
 
 const categories = [
   { name: 'Adventure', icon: '🧗' },
@@ -30,6 +26,22 @@ const categories = [
 const Home = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState({ from: '', to: '', date: '', travelers: '1' });
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const data = await api.getPackages();
+        setPackages(data.slice(0, 3)); // Show top 3 on home
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackages();
+  }, []);
 
   return (
     <div className="home-page">
@@ -116,25 +128,31 @@ const Home = () => {
       <section className="home-section">
         <h2 className="section-title">Complete Trip Packages</h2>
         <div className="pkg-grid">
-          {packages.map((pkg) => (
-            <div key={pkg.id} className="pkg-card">
-              <span className={`pkg-badge ${pkg.badge}`}>{pkg.type}</span>
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-2xl font-bold text-white">{pkg.title}</h3>
-                <span className="text-primary font-bold">{pkg.duration}</span>
+          {loading ? (
+            <p className="text-white/50 text-center py-8">Loading packages...</p>
+          ) : packages.map((pkg, idx) => {
+            const badges = ['badge-budget', 'badge-standard', 'badge-premium'];
+            const types = ['Budget', 'Standard', 'Premium'];
+            return (
+              <div key={pkg._id} className="pkg-card">
+                <span className={`pkg-badge ${badges[idx % 3]}`}>{types[idx % 3]}</span>
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-2xl font-bold text-white">{pkg.title}</h3>
+                  <span className="text-primary font-bold">{pkg.duration}</span>
+                </div>
+                <p className="text-white/50 text-sm mb-6 flex-grow">{pkg.description.substring(0, 80)}...</p>
+                <div className="flex items-center justify-between mt-auto">
+                  <span className="text-2xl font-bold text-white">{pkg.price}</span>
+                  <button
+                    className="search-btn"
+                    onClick={() => navigate(`/package/${pkg._id}`)}
+                  >
+                    View Package
+                  </button>
+                </div>
               </div>
-              <p className="text-white/50 text-sm mb-6 flex-grow">{pkg.desc}</p>
-              <div className="flex items-center justify-between mt-auto">
-                <span className="text-2xl font-bold text-white">{pkg.price}</span>
-                <button
-                  className="search-btn"
-                  onClick={() => navigate(`/package/${pkg.id}`)}
-                >
-                  View Package
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

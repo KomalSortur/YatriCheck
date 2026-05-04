@@ -75,12 +75,35 @@ export const api = {
     return res.json();
   },
 
-  toggleWishlist: async (packageId) => {
-    const res = await fetch(`${API_URL}/users/wishlist/${packageId}`, {
+  updateProfile: async (data) => {
+    const res = await fetch(`${API_URL}/users/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders()
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to update profile');
+    return res.json();
+  },
+
+  toggleCart: async (packageId) => {
+    const res = await fetch(`${API_URL}/users/cart/${packageId}`, {
       method: 'POST',
       headers: authHeaders()
     });
-    if (!res.ok) throw new Error('Failed to update wishlist');
+    if (!res.ok) throw new Error('Failed to update cart');
+    return res.json();
+  },
+
+  addRecentlyViewed: async (packageId) => {
+    const res = await fetch(`${API_URL}/users/recently-viewed/${packageId}`, {
+      method: 'POST',
+      headers: authHeaders()
+    });
+    // Doesn't strictly need error handling since it's fire-and-forget
+    if (!res.ok) console.error('Failed to log recently viewed');
     return res.json();
   }
 };
