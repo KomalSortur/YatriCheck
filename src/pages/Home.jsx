@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Users, ShieldCheck, CreditCard, Clock, Headset, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../utils/api';
 
 const destinations = [
   { id: 1, name: 'Goa', price: '₹12,000', tag: 'Beach Paradise', img: 'https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?q=80&w=800' },
@@ -12,8 +13,6 @@ const destinations = [
   { id: 7, name: 'Hampi', price: '₹5,000', tag: 'Hampi ruins', img: 'https://assets-news.housing.com/news/wp-content/uploads/2022/08/31020547/places-to-visit-in-hampi-FEATURE-compressed.jpg' },
   { id: 8, name: 'Rajasthan', price: '₹15,000', tag: 'Hawa Mahal', img: 'https://wallpapercave.com/wp/wp4555011.jpg' },
 ];
-
-import { api } from '../utils/api';
 
 const categories = [
   { name: 'Adventure', icon: '🧗' },

@@ -3,7 +3,7 @@ import { Search, Star, Heart, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 
-const categories = ['All', 'Beaches', 'Adventure', 'City', 'Culture', 'History'];
+const categories = ['All', 'Beach', 'Adventure', 'Hill Stations', 'Religious', 'Nature', 'Heritage', 'City Tours'];
 
 const Explore = () => {
   const [activeCat, setActiveCat] = useState('All');
@@ -17,7 +17,7 @@ const Explore = () => {
         const data = await api.getPackages();
         setPackages(data);
       } catch (err) {
-        console.error(err);
+        console.error('API Error:', err);
       } finally {
         setLoading(false);
       }
@@ -25,9 +25,10 @@ const Explore = () => {
     fetchPackages();
   }, []);
 
-  // Use a simple mock logic to map categories for filtering if needed,
-  // since our DB packages don't have explicit categories yet.
-  const filteredDestinations = packages;
+  // Simple filtering logic
+  const filteredDestinations = activeCat === 'All' 
+    ? packages 
+    : packages.filter(pkg => pkg.title.toLowerCase().includes(activeCat.toLowerCase()) || pkg.description.toLowerCase().includes(activeCat.toLowerCase()));
 
   return (
     <div className="pt-32 px-6 max-w-7xl mx-auto">

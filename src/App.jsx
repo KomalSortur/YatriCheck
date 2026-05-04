@@ -21,7 +21,7 @@ const Layout = ({ children }) => {
       {!isLoginPage && <Navbar />}
       
       {/* Persistent Back Button - Positioned below Navbar */}
-      {!isLoginPage && (
+      {!isLoginPage && location.pathname !== '/explore' && (
         <div className="back-btn-wrapper">
           <button 
             onClick={() => navigate(-1)}

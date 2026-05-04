@@ -6,12 +6,68 @@ import loginBg from '../assets/login_bg.png';
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [usePhone, setUsePhone] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate login success
-    navigate('/home');
+    setError('');
+    setLoading(true);
+
+    if (!isLogin) {
+      // Registration Flow
+      try {
+        const response = await fetch('http://localhost:5000/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert('Signup successful! Please login.');
+          setIsLogin(true); // Switch to login view
+          setPassword(''); // Clear password field
+        } else {
+          setError(data.message || 'Registration failed');
+        }
+      } catch (err) {
+        setError('Server connection error');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Login Flow
+      try {
+        const response = await fetch('http://localhost:5000/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem("userId", data.user.id);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+          }
+          navigate('/home');
+        } else {
+          setError(data.message || 'Login failed');
+        }
+      } catch (err) {
+        setError('Server connection error');
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   return (
@@ -38,6 +94,8 @@ const Login = () => {
             </p>
           </div>
 
+          {error && <div className="text-red-500 text-sm mb-4 p-3 bg-red-50 rounded-lg border border-red-200">{error}</div>}
+
           <form onSubmit={handleSubmit}>
             {!isLogin && (
               <div className="login-field">
@@ -48,7 +106,9 @@ const Login = () => {
                     type="text" 
                     placeholder="Enter your name"
                     className="login-input"
-                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required={!isLogin}
                   />
                 </div>
               </div>
@@ -68,6 +128,8 @@ const Login = () => {
                   type={usePhone ? "tel" : "email"} 
                   placeholder={usePhone ? "Enter your phone" : "Hello@basitkhan.design"}
                   className="login-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -81,6 +143,8 @@ const Login = () => {
                   type="password" 
                   placeholder="Enter your password"
                   className="login-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
@@ -92,8 +156,8 @@ const Login = () => {
             </div>
 
             <div className="flex flex-col gap-4 mt-6">
-              <button type="submit" className="login-btn-primary">
-                {isLogin ? 'Log in' : 'Create Account'}
+              <button type="submit" className="login-btn-primary" disabled={loading}>
+                {loading ? 'Processing...' : (isLogin ? 'Log in' : 'Create Account')}
               </button>
               
               <button 

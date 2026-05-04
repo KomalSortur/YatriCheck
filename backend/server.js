@@ -88,7 +88,7 @@ mongoose.connect(MONGO_URI)
           { day: 1, title: 'Arrival in Kyoto' },
           { day: 2, title: 'Kinkaku-ji & Arashiyama' },
           { day: 3, title: 'Fushimi Inari Shrine' },
-          { day: 4, title: 'Tea Ceremony & Geisha District' },
+          { day: 4, title: 'Tea Ceremony & GeGeisha District' },
           { day: 5, title: 'Nara Day Trip' },
           { day: 6, title: 'Departure' }
         ]
