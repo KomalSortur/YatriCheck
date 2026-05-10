@@ -5,10 +5,9 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const navLinks = [
-    { name: 'Home', path: '/home' },
+    { name: 'Home',    path: '/home' },
     { name: 'Explore', path: '/explore' },
-    { name: 'Package', path: '/explore' },
-    { name: 'Booking confirmation', path: '/booking' },
+    { name: 'My Trips', path: '/booking' },
     { name: 'Profile', path: '/profile' },
   ];
 

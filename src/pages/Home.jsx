@@ -202,7 +202,7 @@ const Home = () => {
                 <span className="text-2xl font-bold text-white">{pkg.price}</span>
                 <button
                   className="search-btn"
-                  onClick={() => navigate(`/package/${pkg.id}`)}
+                  onClick={() => navigate('/explore')}
                 >
                   View Package
                 </button>

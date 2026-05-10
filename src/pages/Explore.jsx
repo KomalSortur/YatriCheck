@@ -360,7 +360,7 @@ const Explore = () => {
                           </div>
 
                           <div className="flex gap-2 mt-6">
-                            <button className="view-details-btn-v2 flex-1" onClick={() => navigate(`/package/${trip._id}`)}>
+                            <button className="view-details-btn-v2 flex-1" onClick={() => navigate('/booking')}>
                               View Details
                             </button>
                             <button
@@ -410,7 +410,7 @@ const Explore = () => {
               </h3>
               <div className="mini-list">
                 {allTrips.slice(0, 3).map(trip => (
-                  <div key={trip._id} className="mini-item glass" onClick={() => navigate(`/package/${trip._id}`)}>
+                  <div key={trip._id} className="mini-item glass" onClick={() => navigate('/booking')}>
                     <img src={trip.image} alt={trip.destination} />
                     <div className="info">
                       <p className="name">{trip.destination}</p>
@@ -428,7 +428,7 @@ const Explore = () => {
               <div className="ai-suggestion-box">
                 <p className="text-xs text-text-muted mb-4">Based on your "2 Travelers" search for {searchParams.to || 'trips'}:</p>
                 {allTrips.slice(3, 6).map(trip => (
-                  <div key={trip._id} className="ai-mini-card" onClick={() => navigate(`/package/${trip._id}`)}>
+                  <div key={trip._id} className="ai-mini-card" onClick={() => navigate('/booking')}>
                     <div className="flex items-center gap-3">
                       <div className="ai-icon">✨</div>
                       <span className="font-bold">{trip.destination}</span>
@@ -472,7 +472,7 @@ const Explore = () => {
                       <p>• {p.transport}</p>
                       <p>• {p.tag}</p>
                     </div>
-                    <button className="select-tier-btn" onClick={() => navigate(`/package/${selectedDest.id}`)}>Select {p.type}</button>
+                    <button className="select-tier-btn" onClick={() => navigate('/booking')}>Select {p.type}</button>
                   </div>
                 ))}
               </div>
