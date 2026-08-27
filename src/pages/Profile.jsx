@@ -52,6 +52,8 @@ export default function Profile() {
   const [tab, setTab] = useState('personal');
   const [profile, setProfile] = useState(DEMO_PROFILE);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ name: '', phone: '', photo: '' });
   const navigate = useNavigate();
 
   /* profile edit state */

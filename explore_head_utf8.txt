@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { Search, Star, MapPin, Filter, X, Map as MapIcon, Grid, TrendingUp, Sparkles, ChevronRight, Clock, Plane, Train, Bus, Edit3, Calendar, Users, Heart, ChevronLeft } from 'lucide-react';
 import { api } from '../utils/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -8,27 +8,17 @@ import './Explore.css';
 
 const categories = ['Beach', 'Adventure', 'Hill Stations', 'Religious', 'Nature', 'Heritage', 'City Tours'];
 const durations = ['2D/1N', '3D/2N', '4D/3N', '5D/4N'];
-const hotelTypes = ['3★', '4★', '5★'];
+const hotelTypes = ['3Γÿà', '4Γÿà', '5Γÿà'];
 const transportTypes = ['Bus', 'Train', 'Flight'];
 
 const Explore = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const initialSearch = useMemo(() => {
-    if (location.state?.initialSearch) {
-      return location.state.initialSearch;
-    }
-    const saved = localStorage.getItem('yatri_search');
-    return saved ? JSON.parse(saved) : { from: '', to: '', date: '', travelers: '1' };
-  }, [location.state]);
+  const initialSearch = location.state?.initialSearch || { from: '', to: '', date: '', travelers: '1' };
 
   const [searchParams, setSearchParams] = useState(initialSearch);
   const [isEditingSearch, setIsEditingSearch] = useState(false);
   const [wishlist, setWishlist] = useState([]);
-
-  useEffect(() => {
-    localStorage.setItem('yatri_search', JSON.stringify(searchParams));
-  }, [searchParams]);
 
   // Filters State
   const [filters, setFilters] = useState({
@@ -48,7 +38,7 @@ const Explore = () => {
 
   useEffect(() => {
     // Fetch all trips for sidebar suggestions
-    fetch('http://localhost:5001/api/trips/search')
+    fetch('http://localhost:5000/api/trips/search')
       .then(res => res.json())
       .then(data => setAllTrips(data))
       .catch(err => console.error("Error fetching all trips", err));
@@ -73,7 +63,7 @@ const Explore = () => {
         queryParams.append('budgetMin', filters.budget[0]);
         queryParams.append('budgetMax', filters.budget[1]);
 
-        const response = await fetch(`http://localhost:5001/api/trips/search?${queryParams.toString()}`);
+        const response = await fetch(`http://localhost:5000/api/trips/search?${queryParams.toString()}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch trips from server');
@@ -112,7 +102,7 @@ const Explore = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/wishlist/add', {
+      const response = await fetch('http://localhost:5000/api/wishlist/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, tripId })
@@ -121,7 +111,7 @@ const Explore = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Added to wishlist ❤️');
+        alert('Added to wishlist Γ¥ñ∩╕Å');
         if (!wishlist.includes(tripId)) {
           setWishlist([...wishlist, tripId]);
         }
@@ -245,8 +235,8 @@ const Explore = () => {
               <div className="filter-block">
                 <label className="filter-title">Budget (Per Person)</label>
                 <div className="flex justify-between text-xs text-text-muted mb-2">
-                  <span>₹{filters.budget[0]}</span>
-                  <span>₹{filters.budget[1]}</span>
+                  <span>Γé╣{filters.budget[0]}</span>
+                  <span>Γé╣{filters.budget[1]}</span>
                 </div>
                 <input
                   type="range"
@@ -358,7 +348,7 @@ const Explore = () => {
                               </p>
                             </div>
                             <div className="price-box text-right">
-                              <span className="price-val">₹{trip.price.toLocaleString()}</span>
+                              <span className="price-val">Γé╣{trip.price.toLocaleString()}</span>
                               <span className="price-unit">per person</span>
                             </div>
                           </div>
@@ -370,7 +360,7 @@ const Explore = () => {
                           </div>
 
                           <div className="flex gap-2 mt-6">
-                            <button className="view-details-btn-v2 flex-1" onClick={() => navigate('/booking', { state: { package: trip } })}>
+                            <button className="view-details-btn-v2 flex-1" onClick={() => navigate('/booking')}>
                               View Details
                             </button>
                             <button
@@ -424,7 +414,7 @@ const Explore = () => {
                     <img src={trip.image} alt={trip.destination} />
                     <div className="info">
                       <p className="name">{trip.destination}</p>
-                      <p className="price">Starting ₹{trip.price}</p>
+                      <p className="price">Starting Γé╣{trip.price}</p>
                     </div>
                   </div>
                 ))}
@@ -440,7 +430,7 @@ const Explore = () => {
                 {allTrips.slice(3, 6).map(trip => (
                   <div key={trip._id} className="ai-mini-card" onClick={() => navigate('/booking')}>
                     <div className="flex items-center gap-3">
-                      <div className="ai-icon">✨</div>
+                      <div className="ai-icon">Γ£¿</div>
                       <span className="font-bold">{trip.destination}</span>
                     </div>
                     <ChevronRight size={16} />
@@ -467,7 +457,7 @@ const Explore = () => {
             <img src={selectedDest.img} alt={selectedDest.name} className="sidebar-img" />
             <div className="sidebar-content">
               <h2 className="text-2xl font-bold mb-2">{selectedDest.name}</h2>
-              <p className="text-text-muted mb-6">{selectedDest.duration} • {selectedDest.hotelType} Hotel • {selectedDest.transport} Transport</p>
+              <p className="text-text-muted mb-6">{selectedDest.duration} ΓÇó {selectedDest.hotelType} Hotel ΓÇó {selectedDest.transport} Transport</p>
 
               <h4 className="font-bold mb-4 uppercase text-xs tracking-widest text-primary">Package Tiers</h4>
               <div className="sidebar-packages space-y-4">
@@ -478,11 +468,11 @@ const Explore = () => {
                       <span className="tier-price">{p.price}</span>
                     </div>
                     <div className="tier-features text-xs text-text-muted space-y-1">
-                      <p>• {p.hotel}</p>
-                      <p>• {p.transport}</p>
-                      <p>• {p.tag}</p>
+                      <p>ΓÇó {p.hotel}</p>
+                      <p>ΓÇó {p.transport}</p>
+                      <p>ΓÇó {p.tag}</p>
                     </div>
-                    <button className="select-tier-btn" onClick={() => navigate('/booking', { state: { package: selectedDest } })}>Select {p.type}</button>
+                    <button className="select-tier-btn" onClick={() => navigate('/booking')}>Select {p.type}</button>
                   </div>
                 ))}
               </div>

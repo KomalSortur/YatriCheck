@@ -21,7 +21,7 @@ const Login = () => {
     if (!isLogin) {
       // Registration Flow
       try {
-        const response = await fetch('http://localhost:5000/api/users/register', {
+        const response = await fetch('http://localhost:5001/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
@@ -44,7 +44,7 @@ const Login = () => {
     } else {
       // Login Flow
       try {
-        const response = await fetch('http://localhost:5000/api/users/login', {
+        const response = await fetch('http://localhost:5001/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
@@ -85,7 +85,7 @@ const Login = () => {
       <div className="login-right">
         <div className="login-content">
           <div className="login-form-header">
-            <span className="login-label-top">Login your account</span>
+            <span className="login-label-top">{isLogin ? 'Login your account' : 'Create your account'}</span>
             <h2 className="login-title-main">
               {isLogin ? 'Welcome Back!' : 'Welcome'}
             </h2>
@@ -94,7 +94,20 @@ const Login = () => {
             </p>
           </div>
 
-          {error && <div className="text-red-500 text-sm mb-4 p-3 bg-red-50 rounded-lg border border-red-200">{error}</div>}
+          {error && (
+            <div style={{ 
+              background: 'rgba(239, 68, 68, 0.1)', 
+              border: '1px solid rgba(239, 68, 68, 0.2)', 
+              color: '#f87171', 
+              padding: '0.75rem 1rem', 
+              borderRadius: '12px', 
+              fontSize: '0.9rem', 
+              marginBottom: '1.5rem',
+              textAlign: 'center'
+            }}>
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             {!isLogin && (
@@ -176,7 +189,7 @@ const Login = () => {
               onClick={() => setIsLogin(!isLogin)}
               className="login-toggle-btn"
             >
-              {isLogin ? 'Sign up' : 'Sign in'}
+              {isLogin ? 'Sign up' : 'Log in'}
             </button>
           </div>
         </div>

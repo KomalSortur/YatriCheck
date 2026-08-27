@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { packageId, date, totalPaid } = req.body;
+    const { packageId, date, totalPaid, guests, flightDetails, hotelDetails, paymentMethod } = req.body;
     
     // Generate a random booking ID like YTC-123456
     const bookingId = 'YTC-' + Math.floor(100000 + Math.random() * 900000);
@@ -17,7 +17,11 @@ router.post('/', authMiddleware, async (req, res) => {
       package: packageId,
       date,
       totalPaid,
-      bookingId
+      bookingId,
+      guests,
+      flightDetails,
+      hotelDetails,
+      paymentMethod
     });
 
     await booking.save();

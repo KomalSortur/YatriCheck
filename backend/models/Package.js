@@ -9,6 +9,8 @@ const packageSchema = new mongoose.Schema({
   price: { type: String, required: true },
   img: { type: String, required: true },
   description: { type: String, required: true },
+  food: { type: String, required: true },
+  transport: { type: String, required: true },
   itinerary: [{
     day: { type: Number, required: true },
     title: { type: String, required: true }

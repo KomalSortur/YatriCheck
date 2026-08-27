@@ -39,7 +39,10 @@ const Navbar = () => {
       {/* Right Side Action */}
       <div className="nav-actions">
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => {
+            localStorage.clear();
+            navigate('/');
+          }}
           className="nav-logout-btn"
         >
           Logout

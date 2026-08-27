@@ -6,7 +6,7 @@ import {
   ChevronRight, Star, Headphones, AlertCircle,
   Printer, ExternalLink, Check
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../utils/api';
 import './Booking.css';
 
@@ -62,26 +62,25 @@ const DEMO = {
 
 export default function Booking() {
   const navigate = useNavigate();
-  const [booking, setBooking] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const pkg = location.state?.package;
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) { setLoading(false); return; }
-    api.getMyBookings()
-      .then(list => { if (list.length > 0) setBooking(list[0]); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    if (!pkg) {
+      navigate('/explore');
+    }
+  }, [pkg, navigate]);
 
-  /* use real booking fields if available, else demo */
+  if (!pkg) return null;
+
+  /* use real package fields for the beautiful receipt */
   const d = {
-    bookingId:   booking?.bookingId   || DEMO.bookingId,
-    destination: booking?.package?.title || DEMO.destination,
-    status:      booking?.status      || DEMO.status,
-    totalPaid:   booking?.totalPaid   || DEMO.totalPaid,
-    travelDate:  booking?.date        || DEMO.travelDate,
+    bookingId:   'YTC-' + Math.floor(Math.random() * 900000 + 100000),
+    destination: pkg.destination || pkg.title || DEMO.destination,
+    status:      'Confirmed',
+    totalPaid:   pkg.price ? `₹${pkg.price.toLocaleString()}` : DEMO.totalPaid,
+    travelDate:  DEMO.travelDate,
   };
 
   const copyRef = () => {
@@ -90,12 +89,7 @@ export default function Booking() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) return (
-    <div className="bc-loading">
-      <div className="bc-spinner" />
-      <p>Loading your confirmation…</p>
-    </div>
-  );
+
 
   return (
     <div className="bc-page">

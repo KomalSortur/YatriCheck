@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, Clock, Users, ShieldCheck, MapPin, CheckCircle2 } from 'lucide-react';
+import { Star, Clock, Users, ShieldCheck, MapPin, CheckCircle2, Utensils, Plane } from 'lucide-react';
 import { api } from '../utils/api';
 
 const PackageDetails = () => {
@@ -12,12 +12,21 @@ const PackageDetails = () => {
   const [error, setError] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [date, setDate] = useState('');
+  const [guests, setGuests] = useState(1);
   
   useEffect(() => {
     const fetchPackage = async () => {
       try {
         const data = await api.getPackageById(id);
         setPkg(data);
+        // Log as recently viewed (silently)
+        try {
+          if (api.getAuthToken()) {
+            await api.addRecentlyViewed(id);
+          }
+        } catch (e) {
+          // Ignore if not logged in or error
+        }
       } catch (err) {
         console.error(err);
         setError('Failed to load package details');
@@ -35,7 +44,19 @@ const PackageDetails = () => {
       await api.createBooking({
         packageId: id,
         date,
-        totalPaid: pkg.price
+        totalPaid: pkg.price,
+        guests,
+        flightDetails: {
+          airline: 'IndiGo',
+          pnr: 'YTC' + Math.random().toString(36).substring(7).toUpperCase(),
+          departure: '10:30 AM',
+          arrival: '1:45 PM'
+        },
+        hotelDetails: {
+          name: pkg.title + ' Resort & Spa',
+          roomType: 'Ocean View Suite'
+        },
+        paymentMethod: 'Credit Card (Visa)'
       });
       navigate('/booking');
     } catch (err) {
@@ -100,6 +121,28 @@ const PackageDetails = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="glass p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                  <Utensils className="text-primary w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold outfit">Food & Dining</h3>
+              </div>
+              <p className="text-text-muted text-sm leading-relaxed">{pkg.food || 'Meals details are not specified for this package.'}</p>
+            </div>
+
+            <div className="glass p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                  <Plane className="text-secondary w-5 h-5" />
+                </div>
+                <h3 className="text-xl font-bold outfit">Travel & Transport</h3>
+              </div>
+              <p className="text-text-muted text-sm leading-relaxed">{pkg.transport || 'Transportation details are not specified for this package.'}</p>
+            </div>
+          </div>
+
           <div className="glass p-8">
             <h2 className="text-2xl font-bold mb-6 outfit">Itinerary</h2>
             <div className="space-y-6">
@@ -141,10 +184,15 @@ const PackageDetails = () => {
               </div>
               <div>
                 <label className="text-xs font-bold text-text-muted uppercase mb-2 block">Guests</label>
-                <select className="w-full bg-white/5 border border-glass-border rounded-xl p-3 focus:outline-none focus:border-primary">
-                  <option>1 Adult</option>
-                  <option>2 Adults</option>
-                  <option>Family (2+2)</option>
+                <select 
+                  value={guests}
+                  onChange={(e) => setGuests(parseInt(e.target.value))}
+                  className="w-full bg-white/5 border border-glass-border rounded-xl p-3 focus:outline-none focus:border-primary"
+                >
+                  <option value={1}>1 Adult</option>
+                  <option value={2}>2 Adults</option>
+                  <option value={3}>3 Adults</option>
+                  <option value={4}>4 Adults</option>
                 </select>
               </div>
             </div>

@@ -177,7 +177,7 @@ const destinations = [
 
 const seedDB = async () => {
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/travelApp');
+    await mongoose.connect('mongodb://127.0.0.1:27017/yatricheck');
     console.log('Connected to MongoDB');
     
     await Trip.deleteMany(); // Clear existing trips
